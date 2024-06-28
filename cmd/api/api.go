@@ -25,7 +25,8 @@ func (server *Server) Run() error {
 	router := mux.NewRouter()
 	subRouter := router.PathPrefix("/api/v1").Subrouter()
 
-	userHandler := user.NewHandler()
+	userStore := user.NewStore(server.db)
+	userHandler := user.NewHandler(userStore)
 	userHandler.RegisterRoutes(subRouter)
 
 	log.Println("Server running on port: ", server.address)
