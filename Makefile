@@ -3,3 +3,6 @@ build:
 
 run: build
 	@./bin/GO_API
+
+test:
+	@go test -v ./...

@@ -3,10 +3,10 @@ package types
 import "go-api/enums"
 
 type SignUpPayload struct {
-	Name     string     `json:"name"`
-	Email    string     `json:"email"`
-	Password string     `json:"password"`
-	Role     enums.Role `json:"role"`
+	Name     string     `json:"name" validate:"required"`
+	Email    string     `json:"email" validate:"required,email"`
+	Password string     `json:"password" validate:"required"`
+	Role     enums.Role `json:"role" validate:"required"`
 }
 
 type User struct {

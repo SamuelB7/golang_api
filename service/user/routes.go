@@ -7,6 +7,7 @@ import (
 	"go-api/utils"
 	"net/http"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 )
 
@@ -30,8 +31,15 @@ func (handler *Handler) login(response http.ResponseWriter, request *http.Reques
 func (handler *Handler) signUp(response http.ResponseWriter, request *http.Request) {
 	var payload types.SignUpPayload
 
-	if err := utils.ParseJson(request, payload); err != nil {
+	if err := utils.ParseJson(request, &payload); err != nil {
 		utils.WriteError(response, http.StatusBadRequest, err)
+		return
+	}
+
+	if err := utils.Validate.Struct(payload); err != nil {
+		error := err.(validator.ValidationErrors)
+		utils.WriteError(response, http.StatusBadRequest, fmt.Errorf("invalid payload %v", error))
+		return
 	}
 
 	_, err := handler.store.GetUserByEmail(payload.Email)
