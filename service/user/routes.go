@@ -21,15 +21,15 @@ func NewHandler(store types.UserStore) *Handler {
 
 func (handler *Handler) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/login", handler.login).Methods("POST")
-	router.HandleFunc("/signUp", handler.signUp).Methods("POST")
+	router.HandleFunc("/register", handler.register).Methods("POST")
 }
 
 func (handler *Handler) login(response http.ResponseWriter, request *http.Request) {
 
 }
 
-func (handler *Handler) signUp(response http.ResponseWriter, request *http.Request) {
-	var payload types.SignUpPayload
+func (handler *Handler) register(response http.ResponseWriter, request *http.Request) {
+	var payload types.RegisterPayload
 
 	if err := utils.ParseJson(request, &payload); err != nil {
 		utils.WriteError(response, http.StatusBadRequest, err)
@@ -43,7 +43,7 @@ func (handler *Handler) signUp(response http.ResponseWriter, request *http.Reque
 	}
 
 	_, err := handler.store.GetUserByEmail(payload.Email)
-	if err != nil {
+	if err == nil {
 		utils.WriteError(response, http.StatusBadRequest, fmt.Errorf("user already exists"))
 		return
 	}

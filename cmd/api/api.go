@@ -29,6 +29,6 @@ func (server *Server) Run() error {
 	userHandler := user.NewHandler(userStore)
 	userHandler.RegisterRoutes(subRouter)
 
-	log.Println("Server running on port: ", server.address)
+	log.Println("Server running on port ", server.address)
 	return http.ListenAndServe(server.address, router)
 }

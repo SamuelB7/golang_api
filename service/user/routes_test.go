@@ -16,7 +16,7 @@ func TestUserServiceHandlers(t *testing.T) {
 	handler := NewHandler(userStore)
 
 	t.Run("Should fail if the user payload is invalid", func(t *testing.T) {
-		payload := types.SignUpPayload{
+		payload := types.RegisterPayload{
 			Name:     "test",
 			Email:    "asd",
 			Password: "password",
@@ -25,7 +25,7 @@ func TestUserServiceHandlers(t *testing.T) {
 
 		marshalled, _ := json.Marshal(payload)
 
-		req, err := http.NewRequest(http.MethodPost, "/signUp", bytes.NewBuffer(marshalled))
+		req, err := http.NewRequest(http.MethodPost, "/register", bytes.NewBuffer(marshalled))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -33,7 +33,7 @@ func TestUserServiceHandlers(t *testing.T) {
 		rr := httptest.NewRecorder()
 		router := mux.NewRouter()
 
-		router.HandleFunc("/signUp", handler.signUp)
+		router.HandleFunc("/register", handler.register)
 		router.ServeHTTP(rr, req)
 
 		if rr.Code != http.StatusBadRequest {
@@ -42,7 +42,7 @@ func TestUserServiceHandlers(t *testing.T) {
 	})
 
 	t.Run("Should register a new user", func(t *testing.T) {
-		payload := types.SignUpPayload{
+		payload := types.RegisterPayload{
 			Name:     "test",
 			Email:    "test@email.com",
 			Password: "password",
@@ -51,7 +51,7 @@ func TestUserServiceHandlers(t *testing.T) {
 
 		marshalled, _ := json.Marshal(payload)
 
-		req, err := http.NewRequest(http.MethodPost, "/signUp", bytes.NewBuffer(marshalled))
+		req, err := http.NewRequest(http.MethodPost, "/register", bytes.NewBuffer(marshalled))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -59,7 +59,7 @@ func TestUserServiceHandlers(t *testing.T) {
 		rr := httptest.NewRecorder()
 		router := mux.NewRouter()
 
-		router.HandleFunc("/signUp", handler.signUp)
+		router.HandleFunc("/register", handler.register)
 		router.ServeHTTP(rr, req)
 
 		if rr.Code != http.StatusCreated {

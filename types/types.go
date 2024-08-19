@@ -2,7 +2,7 @@ package types
 
 import "go-api/enums"
 
-type SignUpPayload struct {
+type RegisterPayload struct {
 	Name     string     `json:"name" validate:"required"`
 	Email    string     `json:"email" validate:"required,email"`
 	Password string     `json:"password" validate:"required"`

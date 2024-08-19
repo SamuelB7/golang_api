@@ -15,44 +15,47 @@ func NewStore(db *sql.DB) *Store {
 }
 
 func (store *Store) GetUserByEmail(email string) (*types.User, error) {
-	rows, err := store.db.Query("SELECT * FROM users WHERE email = ?", email)
+	rows, err := store.db.Query("SELECT * FROM users WHERE email = $1", email)
+
 	if err != nil {
 		return nil, err
 	}
 
 	user := new(types.User)
+	found := false
+
 	for rows.Next() {
-		user, err = scanRowIntoUser(rows)
+		err = scanRowIntoUser(rows, user)
 		if err != nil {
 			return nil, err
 		}
+		found = true
 	}
 
-	if user.ID == "" {
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	if !found {
 		return nil, fmt.Errorf("user not found")
 	}
 
 	return user, nil
 }
 
-func scanRowIntoUser(rows *sql.Rows) (*types.User, error) {
-	user := new(types.User)
-	if err := rows.Scan(&user.ID, &user.Name, &user.Email, &user.Role, &user.Password, &user.CreatedAt, &user.UpdatedAt); err != nil {
-		return nil, err
-	}
-
-	return user, nil
+func scanRowIntoUser(rows *sql.Rows, user *types.User) error {
+	return rows.Scan(&user.ID, &user.Email, &user.Name, &user.CreatedAt, &user.UpdatedAt)
 }
 
 func (store *Store) GetUserById(id string) (*types.User, error) {
-	rows, err := store.db.Query("SELECT * FROM users WHERE id = ?", id)
+	rows, err := store.db.Query("SELECT * FROM users WHERE id = $1", id)
 	if err != nil {
 		return nil, err
 	}
 
 	user := new(types.User)
 	for rows.Next() {
-		user, err = scanRowIntoUser(rows)
+		err = scanRowIntoUser(rows, user)
 		if err != nil {
 			return nil, err
 		}
@@ -66,6 +69,10 @@ func (store *Store) GetUserById(id string) (*types.User, error) {
 }
 
 func (store *Store) CreateUser(user types.User) error {
-	_, err := store.db.Exec("INSERT INTO users (id, name, email, role, password) VALUES (?, ?, ?, ?, ?)", user.ID, user.Name, user.Email, user.Role, user.Password)
-	return err
+	_, err := store.db.Exec("INSERT INTO users (name, email, role, password) VALUES ($1, $2, $3, $4)", user.Name, user.Email, user.Role, user.Password)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
