@@ -9,6 +9,11 @@ type RegisterPayload struct {
 	Role     enums.Role `json:"role" validate:"required"`
 }
 
+type LoginPayload struct {
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required"`
+}
+
 type User struct {
 	ID        string     `json:"id"`
 	Name      string     `json:"name"`

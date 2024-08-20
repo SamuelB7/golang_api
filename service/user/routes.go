@@ -6,6 +6,7 @@ import (
 	"go-api/types"
 	"go-api/utils"
 	"net/http"
+	"os"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
@@ -25,7 +26,39 @@ func (handler *Handler) RegisterRoutes(router *mux.Router) {
 }
 
 func (handler *Handler) login(response http.ResponseWriter, request *http.Request) {
+	var payload types.LoginPayload
 
+	if err := utils.ParseJson(request, &payload); err != nil {
+		utils.WriteError(response, http.StatusBadRequest, err)
+		return
+	}
+
+	if err := utils.Validate.Struct(payload); err != nil {
+		error := err.(validator.ValidationErrors)
+		utils.WriteError(response, http.StatusBadRequest, fmt.Errorf("invalid payload %v", error))
+		return
+	}
+
+	user, err := handler.store.GetUserByEmail(payload.Email)
+	if err != nil {
+		utils.WriteError(response, http.StatusBadRequest, fmt.Errorf("invalid email or password"))
+		return
+	}
+
+	if !auth.ComparePassword(user.Password, payload.Password) {
+		utils.WriteError(response, http.StatusBadRequest, fmt.Errorf("invalid email or password"))
+		return
+	}
+
+	secret := []byte(os.Getenv("JWT_SECRET"))
+
+	token, err := auth.CreateJwtToken(secret, user.ID)
+	if err != nil {
+		utils.WriteError(response, http.StatusInternalServerError, err)
+		return
+	}
+
+	utils.WriteJson(response, http.StatusOK, map[string]string{"token": token})
 }
 
 func (handler *Handler) register(response http.ResponseWriter, request *http.Request) {
