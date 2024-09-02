@@ -2,6 +2,7 @@ package api
 
 import (
 	"database/sql"
+	"go-api/service/product"
 	"go-api/service/user"
 	"log"
 	"net/http"
@@ -28,6 +29,10 @@ func (server *Server) Run() error {
 	userStore := user.NewStore(server.db)
 	userHandler := user.NewHandler(userStore)
 	userHandler.RegisterRoutes(subRouter)
+
+	productStore := product.NewStore(server.db)
+	productHandler := product.NewHandler(productStore)
+	productHandler.RegisterRoutes(subRouter)
 
 	log.Println("Server running on port ", server.address)
 	return http.ListenAndServe(server.address, router)
