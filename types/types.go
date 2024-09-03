@@ -33,24 +33,39 @@ type UserStore interface {
 }
 
 type ProductImagesPayload struct {
-	ProductID string `json:"product_id" validate:"required"`
-	ImageURL  string `json:"image_url" validate:"required"`
+	ImageURL string `json:"image_url" validate:"required"`
 }
 
 type ProductPayload struct {
 	Name        string                 `json:"name" validate:"required"`
 	Description string                 `json:"description" validate:"required"`
-	Price       int                    `json:"price" validate:"required"`
+	Price       float32                `json:"price" validate:"required"`
 	Images      []ProductImagesPayload `json:"images" validate:"required"`
 }
 
 type Product struct {
-	ID          string `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	Price       int    `json:"price"`
-	CreatedAt   string `json:"created_at"`
-	UpdatedAt   string `json:"updated_at"`
+	ID          string         `json:"id"`
+	Name        string         `json:"name"`
+	Description string         `json:"description"`
+	Price       float32        `json:"price"`
+	CreatedAt   string         `json:"created_at"`
+	UpdatedAt   string         `json:"updated_at"`
+	Images      []ProductImage `json:"images,omitempty"`
+}
+
+type PartialProduct struct {
+	ID          string  `json:"id"`
+	Name        string  `json:"name"`
+	Description string  `json:"description"`
+	Price       float32 `json:"price"`
+	CreatedAt   string  `json:"created_at"`
+	UpdatedAt   string  `json:"updated_at"`
+	Images      string  `json:"images"`
+}
+
+type ProductWithImages struct {
+	Product Product        `json:"product"`
+	Images  []ProductImage `json:"images"`
 }
 
 type ProductImage struct {
@@ -64,4 +79,5 @@ type ProductImage struct {
 type ProductStore interface {
 	GetProducts() ([]Product, error)
 	CreateProduct(Product) (*Product, error)
+	CreateProductImage(ProductImage) (*ProductImage, error)
 }

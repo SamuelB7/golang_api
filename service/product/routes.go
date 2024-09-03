@@ -44,7 +44,7 @@ func (handler *Handler) CreateProduct(response http.ResponseWriter, request *htt
 		return
 	}
 
-	_, err := handler.store.CreateProduct(types.Product{
+	product, err := handler.store.CreateProduct(types.Product{
 		Name:        payload.Name,
 		Description: payload.Description,
 		Price:       payload.Price,
@@ -55,17 +55,26 @@ func (handler *Handler) CreateProduct(response http.ResponseWriter, request *htt
 		return
 	}
 
-	/* for _, image := range payload.Images {
-		err := handler.store.CreateProductImage(types.ProductImage{
+	var imagesArr []types.ProductImage
+
+	for _, image := range payload.Images {
+		image, err := handler.store.CreateProductImage(types.ProductImage{
 			ProductID: product.ID,
 			ImageURL:  image.ImageURL,
 		})
+
+		imagesArr = append(imagesArr, *image)
 
 		if err != nil {
 			utils.WriteError(response, http.StatusInternalServerError, err)
 			return
 		}
-	} */
+	}
 
-	utils.WriteJson(response, http.StatusCreated, map[string]string{"message": "product created"})
+	productWithImages := types.ProductWithImages{
+		Product: *product,
+		Images:  imagesArr,
+	}
+
+	utils.WriteJson(response, http.StatusCreated, productWithImages)
 }
