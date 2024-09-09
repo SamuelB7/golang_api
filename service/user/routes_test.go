@@ -3,6 +3,7 @@ package user
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"go-api/types"
 	"net/http"
 	"net/http/httptest"
@@ -63,7 +64,7 @@ func TestUserServiceHandlers(t *testing.T) {
 		router.ServeHTTP(rr, req)
 
 		if rr.Code != http.StatusCreated {
-			t.Errorf("Expected status code %d, got %d", http.StatusBadRequest, rr.Code)
+			t.Errorf("Expected status code %d, got %d", http.StatusCreated, rr.Code)
 		}
 	})
 }
@@ -71,7 +72,7 @@ func TestUserServiceHandlers(t *testing.T) {
 type mockUserStore struct{}
 
 func (m *mockUserStore) GetUserByEmail(email string) (*types.User, error) {
-	return nil, nil
+	return nil, fmt.Errorf("user not found")
 }
 
 func (m *mockUserStore) GetUserById(id string) (*types.User, error) {
