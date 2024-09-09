@@ -5,7 +5,7 @@ run: build
 	@./bin/GO_API
 
 test:
-	@go test -v ./...
+	@go test -v -cover ./...
 
 migration:
 	@migrate create -ext sql -dir cmd/migrate/migrations -seq $(filter-out $@,$(MAKECMDGOALS))
