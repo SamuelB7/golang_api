@@ -11,9 +11,9 @@ import (
 )
 
 func CreateJwtToken(secret []byte, userID string) (string, error) {
-	err := godotenv.Load("../../.env")
+	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		log.Fatal("Error loading .env file on auth/jwt.go")
 	}
 
 	expirationSeconds, err := strconv.Atoi(os.Getenv("JWT_EXPIRATION_SECONDS"))

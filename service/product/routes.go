@@ -57,6 +57,16 @@ func (handler *Handler) CreateProduct(response http.ResponseWriter, request *htt
 
 	var imagesArr []types.ProductImage
 
+	if len(payload.Images) == 0 {
+		productWithImages := types.ProductWithImages{
+			Product: *product,
+			Images:  []types.ProductImage{},
+		}
+
+		utils.WriteJson(response, http.StatusCreated, productWithImages)
+		return
+	}
+
 	for _, image := range payload.Images {
 		image, err := handler.store.CreateProductImage(types.ProductImage{
 			ProductID: product.ID,

@@ -81,7 +81,7 @@ func scanRowIntoProduct(rows *sql.Rows) (*types.Product, error) {
 
 func (store *Store) CreateProduct(product types.Product) (*types.Product, error) {
 	query := "INSERT INTO products (name, description, price) VALUES ($1, $2, $3) RETURNING id, name, description, price, created_at, updated_at"
-	err := store.db.QueryRow(query, product.Name, product.Description, product.Price).Scan(&product.ID, &product.Name, &product.Description, &product.Price, &product.CreatedAt, &product.UpdatedAt, nil)
+	err := store.db.QueryRow(query, product.Name, product.Description, product.Price).Scan(&product.ID, &product.Name, &product.Description, &product.Price, &product.CreatedAt, &product.UpdatedAt)
 	if err != nil {
 		log.Printf("Error creating product: %v", err)
 		return nil, err
