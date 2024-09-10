@@ -78,6 +78,62 @@ type ProductImage struct {
 
 type ProductStore interface {
 	GetProducts() ([]Product, error)
+	GetProductById(id string) (*Product, error)
 	CreateProduct(Product) (*Product, error)
 	CreateProductImage(ProductImage) (*ProductImage, error)
+	UpdateProduct(Product) (*Product, error)
+	DeleteProduct(id string) error
+}
+
+type Order struct {
+	ID         string      `json:"id"`
+	UserID     string      `json:"user_id"`
+	Total      float32     `json:"total"`
+	Status     string      `json:"status"`
+	Address    string      `json:"address"`
+	CreatedAt  string      `json:"created_at"`
+	UpdatedAt  string      `json:"updated_at"`
+	OrderItems []OrderItem `json:"order_items,omitempty"`
+}
+
+type PartialOrder struct {
+	ID         string  `json:"id"`
+	UserID     string  `json:"user_id"`
+	Total      float32 `json:"total"`
+	Status     string  `json:"status"`
+	Address    string  `json:"address"`
+	CreatedAt  string  `json:"created_at"`
+	UpdatedAt  string  `json:"updated_at"`
+	OrderItems string  `json:"order_items"`
+}
+
+type OrderItem struct {
+	ID        string  `json:"id"`
+	OrderID   string  `json:"order_id"`
+	ProductID string  `json:"product_id"`
+	Quantity  int     `json:"quantity"`
+	Price     float32 `json:"price"`
+	CreatedAt string  `json:"created_at"`
+	UpdatedAt string  `json:"updated_at"`
+}
+
+type OrderPayload struct {
+	UserID     string             `json:"user_id" validate:"required"`
+	Total      float32            `json:"total" validate:"required"`
+	Status     string             `json:"status" validate:"required"`
+	Address    string             `json:"address" validate:"required"`
+	OrderItems []OrderItemPayload `json:"order_items_ids"`
+}
+
+type OrderItemPayload struct {
+	OrderID   string  `json:"order_id" validate:"required"`
+	ProductID string  `json:"product_id" validate:"required"`
+	Quantity  int     `json:"quantity" validate:"required"`
+	UnitPrice float32 `json:"unit_price" validate:"required"`
+}
+
+type OrderStore interface {
+	CreateOrder(Order) (*Order, error)
+	GetOrdersByUserId(userId string) ([]Order, error)
+	CreateOrderItem(OrderItem) (*OrderItem, error)
 }

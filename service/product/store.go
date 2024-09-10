@@ -50,6 +50,46 @@ func (store *Store) GetProducts() ([]types.Product, error) {
 	return products, nil
 }
 
+func (store *Store) GetProductById(id string) (*types.Product, error) {
+	query := `
+	SELECT 
+			p.id,
+			p.name,
+			p.description,
+			p.price,
+			p.created_at,
+			p.updated_at,
+			COALESCE(json_agg(json_build_object('id', pi.id, 'image_url', pi.image_url, 'created_at', pi.created_at, 'updated_at', pi.updated_at)) FILTER (WHERE pi.id IS NOT NULL), '[]') AS images
+		FROM 
+			products p
+		LEFT JOIN 
+			product_images pi ON p.id = pi.product_id
+		WHERE 
+			p.id = $1
+		GROUP BY 
+			p.id;
+	`
+
+	row, err := store.db.Query(query, id)
+	if err != nil {
+		log.Printf("Error querying product: %v", err)
+		return nil, err
+	}
+
+	var product *types.Product
+
+	for row.Next() {
+		productRow, err := scanRowIntoProduct(row)
+		if err != nil {
+			return nil, err
+		}
+
+		product = productRow
+	}
+
+	return product, nil
+}
+
 func scanRowIntoProduct(rows *sql.Rows) (*types.Product, error) {
 	partialProduct := new(types.PartialProduct)
 	err := rows.Scan(&partialProduct.ID, &partialProduct.Name, &partialProduct.Description, &partialProduct.Price, &partialProduct.CreatedAt, &partialProduct.UpdatedAt, &partialProduct.Images)
@@ -88,6 +128,28 @@ func (store *Store) CreateProduct(product types.Product) (*types.Product, error)
 	}
 
 	return &product, nil
+}
+
+func (store *Store) UpdateProduct(product types.Product) (*types.Product, error) {
+	query := "UPDATE products SET name = $1, description = $2, price = $3 WHERE id = $4 RETURNING id, name, description, price, created_at, updated_at"
+	err := store.db.QueryRow(query, product.Name, product.Description, product.Price, product.ID).Scan(&product.ID, &product.Name, &product.Description, &product.Price, &product.CreatedAt, &product.UpdatedAt)
+	if err != nil {
+		log.Printf("Error updating product: %v", err)
+		return nil, err
+	}
+
+	return &product, nil
+}
+
+func (store *Store) DeleteProduct(id string) error {
+	query := "DELETE FROM products WHERE id = $1"
+	_, err := store.db.Exec(query, id)
+	if err != nil {
+		log.Printf("Error deleting product: %v", err)
+		return err
+	}
+
+	return nil
 }
 
 func (store *Store) CreateProductImage(productImage types.ProductImage) (*types.ProductImage, error) {

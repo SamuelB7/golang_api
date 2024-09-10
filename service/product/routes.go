@@ -18,7 +18,24 @@ func NewHandler(store types.ProductStore) *Handler {
 
 func (handler *Handler) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/products", handler.GetProducts).Methods("GET")
+	router.HandleFunc("/products/{id}", handler.GetProductById).Methods("GET")
 	router.HandleFunc("/products", handler.CreateProduct).Methods("POST")
+	router.HandleFunc("/products/{id}", handler.UpdateProduct).Methods("PUT")
+	router.HandleFunc("/products/{id}", handler.DeleteProduct).Methods("DELETE")
+}
+
+func (handler *Handler) GetProductById(response http.ResponseWriter, request *http.Request) {
+	params := mux.Vars(request)
+
+	ID := params["id"]
+
+	product, err := handler.store.GetProductById(ID)
+	if err != nil {
+		utils.WriteError(response, http.StatusInternalServerError, err)
+		return
+	}
+
+	utils.WriteJson(response, http.StatusOK, product)
 }
 
 func (handler *Handler) GetProducts(response http.ResponseWriter, request *http.Request) {
@@ -87,4 +104,54 @@ func (handler *Handler) CreateProduct(response http.ResponseWriter, request *htt
 	}
 
 	utils.WriteJson(response, http.StatusCreated, productWithImages)
+}
+
+func (handler *Handler) UpdateProduct(response http.ResponseWriter, request *http.Request) {
+	var payload types.ProductPayload
+
+	if err := utils.ParseJson(request, &payload); err != nil {
+		utils.WriteError(response, http.StatusBadRequest, err)
+		return
+	}
+
+	if err := utils.Validate.Struct(payload); err != nil {
+		utils.WriteError(response, http.StatusBadRequest, err)
+		return
+	}
+
+	params := mux.Vars(request)
+
+	ID := params["id"]
+
+	product, err := handler.store.GetProductById(ID)
+	if err != nil {
+		utils.WriteError(response, http.StatusInternalServerError, err)
+		return
+	}
+
+	product.Name = payload.Name
+	product.Description = payload.Description
+	product.Price = payload.Price
+
+	product, err = handler.store.UpdateProduct(*product)
+	if err != nil {
+		utils.WriteError(response, http.StatusInternalServerError, err)
+		return
+	}
+
+	utils.WriteJson(response, http.StatusOK, product)
+}
+
+func (handler *Handler) DeleteProduct(response http.ResponseWriter, request *http.Request) {
+	params := mux.Vars(request)
+
+	ID := params["id"]
+
+	err := handler.store.DeleteProduct(ID)
+	if err != nil {
+		utils.WriteError(response, http.StatusInternalServerError, err)
+		return
+	}
+
+	utils.WriteJson(response, http.StatusNoContent, nil)
 }
